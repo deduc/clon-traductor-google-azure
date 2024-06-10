@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traductor de Google - Iván Gómez Calvo</title>
+    <!-- Mi css -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="css/style.css") }}">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body class="container-fluid">
+    <header class="mt-2 mx-1">
+        <div class="top-left">
+            <img class="menu-desplegable" src="{{ url_for("static", filename="img/optionDesplegable.png") }}" alt="Menu desplegable">
+            <img src={{ url_for("static", filename="img/googleTraductorHeader.png") }} alt="GoogleTranslator">
+        </div>
+
+        <img class="tools-apps-profile" src="{{ url_for("static", filename="img/profileOptionsHeader.png") }}" alt="">
+    </header>
+
+    <main>
+        <article class="d-flex flex-column gap-lg-2">
+            <div class="selector-idioma">
+                <label for="idiomaInput">Idioma de entrada</label>
+                
+                <select name="idiomaInput" id="idiomaInput">
+                    {% for idioma in lista_idiomas %}
+                    <!-- 
+                        Esta opción no me convence, el texto aparece asi: es - Spanish
+                        Creo que me gusta mas que aparezca asi: Spanish
+                     -->
+                    <!-- <option value="{{ idioma.key_idioma }}">{{ idioma.key_idioma }} - {{ idioma.nombre_idioma }}</option> -->
+                    <option value="{{ idioma.key_idioma }}">{{ idioma.nombre_idioma }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <textarea class="text-box input" placeholder="Input" id="textoInput"></textarea>
+
+            <!-- <div class="row"> -->
+            <div class="d-flex justify-content-lg-start justify-content-center my-lg-0 my-4">
+                <button class="col-lg-3 col-3 mx-lg-2 btn btn-secondary" id="botonAudioATextoInput">Grabar Audio</button>
+                <button class="col-lg-3 col-3 btn btn-secondary" id="botonTextoAAudioInput">Reproducir Texto</button>
+            </div>
+        </article>
+
+        <article>
+            <img id="botonIntercambiarIdiomas" class="icono-intercambiar-idioma" src="{{ url_for("static", filename="img/intercambiarIdiomas.png") }}" alt="">
+        </article>
+        
+        <article class="d-flex flex-column gap-lg-2">
+            <div class="selector-idioma">
+                <span>Idioma de salida</span>
+                
+                <select name="idiomaOutput" id="idiomaOutput">
+                    {% for idioma in lista_idiomas %}
+                    <option value="{{ idioma.key_idioma }}">{{ idioma.nombre_idioma }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="text-box output">
+                <!-- Output -->
+                <p id="textoOutput">{{ textoOutput }}</p>
+            </div>
+
+            <!-- <div class="row"> -->
+            <div class="d-flex justify-content-lg-start justify-content-center my-lg-0 my-4">
+                <button class="col-lg-3 col-3 btn btn-secondary" id="botonTextoAAudioOutput">Reproducir Texto</button>
+            </div>
+        </article>
+    </main>
+
+    <footer class="mt-5">
+        <div class="btn btn-primary col-2" id="botonTraducir">Traducir</div>
+    </footer>
+
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <script>
+        function traducir_texto(){
+            let idiomaInputValue = document.getElementById("idiomaInput").value;
+            let idiomaOutputValue = document.getElementById("idiomaOutput").value;
+            let textoInput = document.getElementById("textoInput").value;
+
+            fetch("/traducir", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    idiomaInput: idiomaInputValue,
+                    idiomaOutput: idiomaOutputValue,
+                    textoInput: textoInput
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Error al enviar la solicitud");
+                }
+            })
+            .then(data => {
+                console.log("Texto de salida:", data.textoOutput);
+                escribirTraduccion(data.textoOutput);
+            })
+            .catch(error => {
+                console.error("Error de red:", error);
+            });
+        }
+
+        function input_texto_a_audio(){
+            console.log("function input_texto_a_audio");
+            
+            let idiomaInputValue = document.getElementById("idiomaInput").value;
+            let textoInputValue = document.getElementById("textoInput").value;
+
+            fetch("/texto_a_audio", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    idiomaInput: idiomaInputValue,
+                    textoInput: textoInputValue
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Texto convertido a audio correctamente.");
+                    // Aquí puedes agregar lógica adicional si es necesario
+                } else {
+                    throw new Error("Error al convertir texto a audio");
+                }
+            })
+            .catch(error => {
+                console.error("Error al convertir texto a audio:", error);
+            });
+        }
+
+        function input_audio_a_texto(){
+            console.log("function input_audio_a_texto");
+            
+            let idiomaInputValue = document.getElementById("idiomaInput").value;
+            let idiomaOutputValue = document.getElementById("idiomaOutput").value;
+
+            fetch("/audio_a_texto", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    idiomaInput: idiomaInputValue,
+                    idiomaOutput: idiomaOutputValue
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Error al enviar la solicitud");
+                }
+            })
+            .then(data => {
+                console.log("Mensaje del servidor:", data.message, data.translated_text);
+                document.getElementById("textoInput").value = data.translated_text;
+            })
+            .catch(error => {
+                console.error("Error de red:", error);
+            });
+        }
+        
+        function output_texto_a_audio(){
+            console.log("function output_texto_a_audio");
+            
+            let idiomaInputValue = document.getElementById("idiomaInput").value;
+            let textoInputValue = document.getElementById("textoOutput").innerText;
+
+            console.log(textoInputValue);
+
+            fetch("/texto_a_audio", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    idiomaInput: idiomaInputValue,
+                    textoInput: textoInputValue
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Texto convertido a audio correctamente.");
+                    // Aquí puedes agregar lógica adicional si es necesario
+                } else {
+                    throw new Error("Error al convertir texto a audio");
+                }
+            })
+            .catch(error => {
+                console.error("Error al convertir texto a audio:", error);
+            });
+        }
+
+        function escribirTraduccion(texto) {
+            let textoOutput = document.getElementById("textoOutput");
+            textoOutput.innerText = texto;
+        }
+
+        function intercambiarIdiomas(){
+            let idiomaInputValue = document.getElementById("idiomaInput").value;
+            let idiomaOutputValue = document.getElementById("idiomaOutput").value;
+            
+            let auxIdioma = idiomaInputValue;
+
+            document.getElementById("idiomaInput").value = idiomaOutputValue;
+            document.getElementById("idiomaOutput").value = auxIdioma;
+        }
+
+        function cargar_eventos_botones() {
+            let botonTraducir = document.getElementById("botonTraducir");
+            botonTraducir.addEventListener("click", traducir_texto);
+
+            let botonIntercambiarIdioma = document.getElementById("botonIntercambiarIdiomas");
+            botonIntercambiarIdioma.addEventListener("click", intercambiarIdiomas);
+
+            let botonTextoAAudioInput = document.getElementById("botonTextoAAudioInput");
+            botonTextoAAudioInput.addEventListener("click", input_texto_a_audio);
+
+            let botonAudioATextoInput = document.getElementById("botonAudioATextoInput");
+            botonAudioATextoInput.addEventListener("click", input_audio_a_texto);
+
+            let botonTextoAAudioOutput = document.getElementById("botonTextoAAudioOutput");
+            botonTextoAAudioOutput.addEventListener("click", output_texto_a_audio);
+        }
+
+        function main() {
+            cargar_eventos_botones();
+        }
+
+        main();
+    </script>
+</body>
+</html>

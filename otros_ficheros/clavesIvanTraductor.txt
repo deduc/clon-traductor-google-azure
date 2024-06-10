@@ -1,0 +1,7 @@
+Traducción a Texto: https://api.cognitive.microsofttranslator.com/
+Clave1: 34a36cdfac9942d7bc7b246a4df81020
+
+Traductor de documentos: https://aitraductorigc.cognitiveservices.azure.com/
+Clave2: 27543665872e42848c45a98350e8b8f8
+
+Region: northeurope

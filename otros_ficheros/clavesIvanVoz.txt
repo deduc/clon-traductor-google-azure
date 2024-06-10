@@ -1,0 +1,5 @@
+Traducción a Texto: https://northeurope.api.cognitive.microsoft.com/
+Clave1: 785a935cb404462aa5cf94d0b04b1808
+Clave2: 8acfc45ccf884e068e2cd08ba7d1c4d1
+
+Region: northeurope
